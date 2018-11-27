@@ -1,5 +1,6 @@
 # Vue
 Some knowledge points of Vue
+v-bind:is=""
 ## Prop
 ### Prop类型
 以字符串数组形式列出Prop  
@@ -136,6 +137,83 @@ Vue.component('base-checkbox',{
 	`
 })
 ```
-现在在这个组件上使用v-model的时候:
+  现在在这个组件上使用v-model的时候:  
 ```<base-checkbox v-model="lovingVue"></base-checkbox>```
 这里的 `lovingVue` 的值将会传入这个名为 `checked` 的 `prop`。同时当 <base-checkbox> 触发一个 `change` 事件并附带一个新的值的时候，这个 `lovingVue` 的属性将会被更新。
+### 将原生事件绑定到组件 
+可以使用v-on的.native修饰符  
+.native -监听组件根元素的原生事件。 主要是给自定义的组件添加原生事件。
+.......
+
+### `.sync`修饰符
+  我们可能需要对一个prop进行“双向绑定”。但真正的双向数据绑定会带来维护上的问题，因为子组件可以修改父组件，且在父组件和子组件都没有明显的改动来源。
+所以推荐以`update:myPropName`的模式触发事件取而代之。
+```
+this.$emit('update:title', newTitle)
+然后父组件可以监听那个事件并根据需要更新一个本地的数据属性。
+<text-document
+	v-bind:title="doc.title"
+	v-on:update:title="doc.title = $event"
+></text-document>
+为了方便 给这种模式提供一个缩写模式，即`.sync`修饰符
+<text-document v-bind:title.sync="doc.title"></text-document>
+```
+> 注意带有.sync修饰符的v-bind不能和表达式一起（例如v-bind:title.sync="doc.title + '!' "是无效的）。取而代之的是，你只能提供你想要绑定的属性名，类似v-model  
+当我们用一个对象同时设置多个prop的时候，也可以将这个.sync修饰符和v-bind配合使用。  
+>将v-bind.sync用在一个字面量的对象上，例如`v-bind.sync="{ title: doc.title }"`,是无法正常工作的，因为在解析一个像这样的复杂表达式的时候，有很多边缘情况需要考虑。  
+
+## 插槽
+### 具名插槽
+`<slot>`元素有一个特殊的特性：name.这个特性可以定义额外的插槽：
+假设在一个<base-layout>组件的模板中
+```
+<div class="container">
+	<header>
+		<slot name="header"></slot>
+	</header>
+	<main>
+		<slot></slot>
+	</main>
+	<footer>
+		<slot name="footer"></slot>
+	</footer>
+</div>
+在向具名插槽提供内容的时候，我们可以在一个父组件的<template>元素上使用slot特性：
+<base-layout>
+	<template slot="header">
+		<h1>Here might be a page title</h1>
+	<template>
+	
+	<p>A paragraph for the main content.</p>
+	<p>And another one.<p>
+	
+	<template slot="footer">
+		<p>Here's some contact info</p>
+	</template>
+</base-layout>
+另一种slot特性的用法是直接在一个普通元素上：
+<base-layout>
+	<h1 slot="header">Here might be a page title</h1>
+	
+	<p>A paragraph for the main content.</p>
+	<p>And another one.</p>
+	
+	<p slot="footer">Here's some contact info</p>
+</base-layout>
+我们可以保留一个未命名插槽，这个插槽是默认插槽。
+```
+### 插槽的默认内容
+有时候为插槽提供默认的内容是很有用的。例如，一个 <submit-button> 组件可能希望这个按钮的默认内容是“Submit”，但是同时允许用户覆写为“Save”、“Upload”或别的内容。
+```
+<button type="submit">
+	<slot>Submit</slot>
+</button>
+```
+如果父组件为这个插槽提供内容，则默认的内容会被替换。
+### 编译作用域
+父组件模板的所有东西都会在父级作用域内编译；子组件模板的所有东西都会在子级作用域内编译。
+### 作用域插槽
+
+
+
+
