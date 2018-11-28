@@ -213,7 +213,78 @@ this.$emit('update:title', newTitle)
 ### 编译作用域
 父组件模板的所有东西都会在父级作用域内编译；子组件模板的所有东西都会在子级作用域内编译。
 ### 作用域插槽
+我认为作用域插槽的template里就是做了一个循环的模板，在外部调用时，将外部的数据按模板中遍历的方法遍历，然后显示出来,再在子组件中插入东西
+作用域插槽最具代表性的用例是`列表组件`
+```
+<div id="app">
+	<my-list :books='books'>
+		//`slot-scope`不再限制在<template>元素上使用，而可以用在插槽内的任何元素或组件上。
+		<template slot='book' slot-scope='props'>  
+			<li>{{props.bookName}}</li>
+		</template>
+	</my-list>
+</app>
+<script>
+	Vue.component('my-list',{
+		prop: {
+			books {
+				type: Array,
+				default: function(){
+					return [];
+				}
+			}
+		},
+		template:`
+		<ul>
+			<slot name="book" v-for='book in books' :bookName='book.name'></slot>
+		</ul>
+		`
+	})
+	let app = new Vue({
+		el: '#app',
+		data: {
+			books: [
+				{name: '<<Vue js 实战>>'},
+				{name: '<<JavaScript 高级程序设计>>'},
+				{name: '<<深入浅出>>'}
+			]
+		}
+	})
+</script>
+```
+#### 解构slot-scope
+如果一个JavaScript表达式在一个函数定义的参数位置有效，那么这个表达式实际上就可以被slot-scope接受。
+
+## 动态组件与异步组件
+<component v-bind:is="currentTabComponent"></component>
+每次切换新标签的时候，Vue都创建了一个新的currentTabComponent实例。   
+
+重新创建动态组件的行为通常是非常有用的，但是在这个案例中，我们更希望那些标签的组件实例能够被在它们第一次被创建的时候缓存下来。
+为了解决这个问题，我们可以用一个<keep-alive>元素将其动态组件包裹起来。
+```
+<!-- 失去的组件会被缓存 -->
+<keep-alive>
+	<component v-bind:is="currentTabComponent"></component>
+</keep-alive>
+```
 
 
 
-
+# Vue中的父组件和子组件
+组件通过`prop`属性接受它的父级的数据，那么当前这个组件就是相对的子组件了，提供数据的就是符组件。
+```
+<div id='app'>
+	<my-component message='来自父组件的数据'></my-component>
+</div>
+<script>
+	Vue.component('my-component',{
+		props: ['message'],
+		template: `<div>{{message}}</div>`
+	})
+	let app = new Vue({
+		el: '#app'
+	})
+```
+**父子组件是相对的，不是绝对的**
+子组件：my-component
+父组件：app
